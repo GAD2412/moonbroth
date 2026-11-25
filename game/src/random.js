@@ -1,0 +1,19 @@
+// Seeded random numbers, so a shift with the same seed deals the same tickets
+// and the screenshot scenes always render the same frame.
+
+/** A mulberry32 generator: returns a function giving floats in [0, 1). */
+export function createRandom(seed) {
+  let state = seed >>> 0;
+  return function next() {
+    state = (state + 0x6d2b79f5) >>> 0;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** One element of `list`, picked with the generator `random`. */
+export function pick(random, list) {
+  return list[Math.floor(random() * list.length) % list.length];
+}
