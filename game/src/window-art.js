@@ -11,7 +11,7 @@ const SKIN = ['#f0c29a', '#d79c6e', '#a8704a', '#f6d3b5', '#7a4b2f'];
 /** The whole window for one frame. */
 export function drawServeWindow(ctx, kitchen, t) {
   const rect = LAYOUT.window;
-  drawPierView(ctx, rect, t);
+  drawPierView(ctx, rect, t, Boolean(kitchen.rush));
   kitchen.orders.tickets.forEach((ticket, i) => drawCustomer(ctx, ticket, rect.x + 50 + i * 78, rect.y + 168, t));
   drawAwningAndFrame(ctx, rect);
   const shelfY = rect.y + rect.h - 52;
@@ -38,8 +38,8 @@ export function drawServeWindow(ctx, kitchen, t) {
   keyCap(ctx, rect.x + 136, rect.y + 46, 'ENTER');
 }
 
-/** Night sky, a crescent moon, the boardwalk and the pier's string lights. */
-function drawPierView(ctx, rect, t) {
+/** Night sky, a crescent moon, the boardwalk and the pier's string lights (red in a rush). */
+function drawPierView(ctx, rect, t, rush) {
   const sky = ctx.createLinearGradient(0, rect.y, 0, rect.y + rect.h);
   sky.addColorStop(0, '#1d1b47');
   sky.addColorStop(1, '#3f2d5e');
@@ -57,9 +57,11 @@ function drawPierView(ctx, rect, t) {
   ctx.fillRect(rect.x, rect.y + 150, rect.w, 40);
   for (let i = 0; i < 6; i += 1) {
     const lx = rect.x + 20 + i * 62;
-    ctx.fillStyle = `rgba(255,${170 + (i % 2) * 40},90,${0.6 + Math.sin(t * 2 + i) * 0.2})`;
+    const green = rush ? 70 + (i % 2) * 30 : 170 + (i % 2) * 40;
+    const blink = rush ? Math.sin(t * 9 + i * 1.5) : Math.sin(t * 2 + i);
+    ctx.fillStyle = `rgba(255,${green},90,${0.6 + blink * 0.25})`;
     ctx.beginPath();
-    ctx.arc(lx, rect.y + 46 + Math.sin(i) * 6, 5, 0, Math.PI * 2);
+    ctx.arc(lx, rect.y + 46 + Math.sin(i) * 6, rush ? 6 : 5, 0, Math.PI * 2);
     ctx.fill();
   }
 }

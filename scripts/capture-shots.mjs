@@ -36,8 +36,10 @@ try {
     writeFileSync(join(folder, shot.name), bytes);
     console.log(`${shot.name}  ${(bytes.length / 1024).toFixed(0)} KiB  quality ${quality + 5}`);
   }
-  if (page.errors.length) console.log('console errors:', page.errors);
-  else console.log('no console errors');
+  if (page.errors.length) {
+    console.log('console errors:', page.errors);
+    process.exitCode = 1;
+  } else console.log('no console errors');
 } finally {
   await page.close();
   server.kill();

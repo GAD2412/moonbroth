@@ -32,7 +32,8 @@ export function stationLabel(ctx, rect, text, key) {
 }
 
 /** A pill-shaped tag centred on (x, y); a `ready` tag is green and gently pulses. */
-export function bowlTag(ctx, x, y, text, ready, t) {
+export function bowlTag(ctx, x, y, label, ready, t) {
+  const text = ready ? `✓ ${label}` : label;
   ctx.font = `bold 13px ${FONT}`;
   const w = ctx.measureText(text).width + 18;
   const pop = ready ? 1 + Math.sin(t * 6) * 0.04 : 1;
