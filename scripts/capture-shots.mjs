@@ -10,7 +10,7 @@ import { openChrome } from './chrome.mjs';
 const root = fileURLToPath(new URL('..', import.meta.url));
 const MAX_BYTES = 256 * 1024;
 const SHOTS = [
-  { name: '01-lantern-rush.jpg', query: '?shot=cover&seed=12' },
+  { name: '01-lantern-rush.jpg', query: '?shot=cover&seed=29' },
   { name: '02-title.jpg', query: '?shot=title&seed=12' },
   { name: '03-first-shift-tutorial.jpg', query: '?shot=tutorial&seed=12' },
   { name: '04-festival-night.jpg', query: '?shot=festival&seed=5' },

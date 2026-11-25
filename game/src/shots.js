@@ -159,7 +159,7 @@ export function stageShot(name, app) {
   }
   startShift(app, 4);
   openStall(app);
-  const busy = (k) => k.grill.some(Boolean) && k.bowls.some((bowl) => bowl && bowl.items.length >= 2 && !recipeMatching(bowl.items));
+  const busy = (k) => k.grill.some(Boolean) && k.pot.some(Boolean) && k.bowls.some((bowl) => bowl && bowl.items.length >= 2 && !recipeMatching(bowl.items));
   playForward(app, 140, (k) => k.elapsed > 44 && k.rush && k.orders.tickets.length >= 4 && k.shelf.length > 0 && k.shelf[0].timer < 1.2 && busy(k) && settled(k), 0.42);
-  app.shotPointer = { x: 500, y: 560 };
+  app.shotPointer = { x: 690, y: 500 };
 }

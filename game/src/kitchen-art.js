@@ -428,7 +428,7 @@ function drawBowlSpots(ctx, kitchen, t) {
     if (bowl) {
       const recipe = recipeMatching(bowl.items);
       const ticket = ticketForBowl(kitchen, recipe);
-      const scale = 0.6 + 0.4 * easeOutBack(bowl.appear);
+      const scale = (0.6 + 0.4 * easeOutBack(bowl.appear)) * (1 + 0.12 * Math.sin((bowl.pop ?? 0) * Math.PI));
       drawBowl(ctx, cx, cy - 6, 62 * scale, bowl.items, Boolean(ticket));
       if (recipe) bowlTag(ctx, cx, rect.y + 36, ticket ? `#${ticket.id} READY` : recipe.name, Boolean(ticket), t);
       else if (bowl.items.length) bowlTag(ctx, cx, rect.y + 36, `${bowl.items.length} in`, false, t);
@@ -536,22 +536,7 @@ function drawServeWindow(ctx, kitchen, t) {
     ctx.arc(lx, rect.y + 46 + Math.sin(i) * 6, 5, 0, Math.PI * 2);
     ctx.fill();
   }
-  const waiting = kitchen.orders.tickets.length;
-  for (let i = 0; i < waiting; i += 1) {
-    const px = rect.x + 50 + i * 78;
-    const py = rect.y + 168 + Math.sin(t * 3 + i * 2) * 1.5;
-    ctx.fillStyle = '#0e0b1f';
-    ctx.beginPath();
-    ctx.arc(px, py - 54, 15, 0, Math.PI * 2);
-    ctx.fill();
-    roundRect(ctx, px - 22, py - 38, 44, 50, 16);
-    ctx.fill();
-    if (kitchen.orders.tickets[i].critic) {
-      ctx.fillStyle = PALETTE.amber;
-      ctx.fillRect(px - 16, py - 74, 32, 6);
-      ctx.fillRect(px - 10, py - 84, 20, 10);
-    }
-  }
+  kitchen.orders.tickets.forEach((ticket, i) => drawCustomer(ctx, ticket, rect.x + 50 + i * 78, rect.y + 168, t));
   ctx.fillStyle = PALETTE.lanternDark;
   ctx.fillRect(rect.x - 6, rect.y - 4, rect.w + 12, 14);
   for (let i = 0; i < 10; i += 1) {
@@ -589,6 +574,64 @@ function drawServeWindow(ctx, kitchen, t) {
   ctx.textBaseline = 'middle';
   ctx.fillText('SERVE WINDOW', rect.x + 18, rect.y + 46.5);
   keyCap(ctx, rect.x + 136, rect.y + 46, 'ENTER');
+}
+
+const COATS = ['#3d6fb0', '#8a4f9e', '#2f8f88', '#b5643a', '#5a6b3d', '#a83a5a'];
+const SKIN = ['#f0c29a', '#d79c6e', '#a8704a', '#f6d3b5', '#7a4b2f'];
+
+/**
+ * One customer waiting outside the window for `ticket`: their face sours as the ticket's
+ * patience runs down, and critics wear a gold hat.
+ */
+function drawCustomer(ctx, ticket, x, baseY, t) {
+  const mood = ticket.patience / ticket.maxPatience;
+  const fidget = mood < 0.25 ? Math.sin(t * 18 + ticket.id) * 2 : Math.sin(t * 2 + ticket.id) * 1;
+  const y = baseY + fidget;
+  ctx.fillStyle = COATS[ticket.id % COATS.length];
+  roundRect(ctx, x - 24, y - 40, 48, 54, 18);
+  ctx.fill();
+  ctx.fillStyle = SKIN[(ticket.id * 3) % SKIN.length];
+  ctx.beginPath();
+  ctx.arc(x, y - 58, 17, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = PALETTE.ink;
+  ctx.fillRect(x - 8, y - 62, 4, 4);
+  ctx.fillRect(x + 4, y - 62, 4, 4);
+  ctx.strokeStyle = PALETTE.ink;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  if (mood > 0.5) ctx.arc(x, y - 54, 6, 0.2, Math.PI - 0.2);
+  else if (mood > 0.25) {
+    ctx.moveTo(x - 5, y - 50);
+    ctx.lineTo(x + 5, y - 50);
+  } else ctx.arc(x, y - 44, 6, Math.PI + 0.3, -0.3);
+  ctx.stroke();
+  if (mood <= 0.25) {
+    ctx.fillStyle = '#9fd4ff';
+    ctx.beginPath();
+    ctx.ellipse(x + 15, y - 66, 3, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  if (ticket.critic) {
+    ctx.fillStyle = PALETTE.amber;
+    ctx.fillRect(x - 18, y - 76, 36, 5);
+    ctx.fillRect(x - 11, y - 90, 22, 15);
+    ctx.fillStyle = PALETTE.lanternDark;
+    ctx.fillRect(x - 11, y - 79, 22, 3);
+  } else {
+    ctx.fillStyle = ['#2a2033', '#5b3a22', '#1d1b47'][ticket.id % 3];
+    ctx.beginPath();
+    ctx.arc(x, y - 64, 17, Math.PI, 0);
+    ctx.fill();
+  }
+  roundRect(ctx, x - 16, y - 104 + (ticket.critic ? -6 : 0), 32, 16, 6);
+  ctx.fillStyle = 'rgba(247,234,208,0.9)';
+  ctx.fill();
+  ctx.font = `bold 10px ${FONT}`;
+  ctx.fillStyle = PALETTE.ink;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(`#${ticket.id}`, x, y - 96 + (ticket.critic ? -6 : 0));
 }
 
 function drawBell(ctx, x, y, ring) {

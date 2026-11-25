@@ -239,6 +239,7 @@ function addToBowl(kitchen, bowl, item, fromRect) {
   if (bowl.items.includes(item.kind)) return refuse(kitchen, rect, 'Already in the bowl');
   if (bowl.items.length >= BOWL_MAX_ITEMS) return refuse(kitchen, rect, 'Bowl is full');
   bowl.items.push(item.kind);
+  bowl.pop = 1;
   if (holdingItem(kitchen) === item) kitchen.hand = null;
   const at = centerOf(rect);
   emit(kitchen, 'plate', at.x, at.y - 10, { kind: item.kind, ready: recipeMatching(bowl.items) !== null });
@@ -320,7 +321,7 @@ function serveAtWindow(kitchen) {
   kitchen.served += 1;
   kitchen.shelf.push({ bowl, recipe, ticket, timer: PICKUP_SECONDS });
   kitchen.bowls[from] === null ? (kitchen.bowls[from] = newBowl()) : returnBowl(kitchen, newBowl(), from);
-  emit(kitchen, 'serve', rect.x + rect.w / 2, rect.y + 150, { points, combo: kitchen.combo, critic: ticket.critic });
+  emit(kitchen, 'serve', rect.x + rect.w / 2, rect.y + 150, { points, combo: kitchen.combo, critic: ticket.critic, slot: ticket.slot, id: ticket.id, name: recipe.name });
   return true;
 }
 
@@ -339,7 +340,11 @@ export function stepKitchen(kitchen, dt) {
   if (kitchen.over) return;
   stepCooker(kitchen, 'pot', dt);
   stepCooker(kitchen, 'grill', dt);
-  for (const bowl of kitchen.bowls) if (bowl && bowl.appear < 1) bowl.appear = Math.min(1, bowl.appear + dt * 4);
+  for (const bowl of kitchen.bowls) {
+    if (!bowl) continue;
+    if (bowl.appear < 1) bowl.appear = Math.min(1, bowl.appear + dt * 4);
+    if (bowl.pop > 0) bowl.pop = Math.max(0, bowl.pop - dt * 4);
+  }
   for (const plate of kitchen.shelf) plate.timer -= dt;
   kitchen.shelf = kitchen.shelf.filter((plate) => plate.timer > 0);
   const teaching = kitchen.tutorial && !kitchen.tutorial.done;

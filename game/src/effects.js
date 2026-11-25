@@ -8,7 +8,7 @@ import { createRandom } from './random.js';
 const MAX_PARTICLES = 420;
 
 export function createEffects(seed = 7) {
-  return { particles: [], texts: [], banner: null, shake: 0, flash: 0, random: createRandom(seed), steamClock: 0 };
+  return { particles: [], texts: [], flyers: [], banner: null, shake: 0, flash: 0, random: createRandom(seed), steamClock: 0 };
 }
 
 function spawn(fx, particle) {
@@ -72,6 +72,7 @@ export function handleEvent(fx, event, kitchen) {
       if (event.combo >= 2) floatText(fx, `COMBO x${event.combo}`, x, y + 4, '#ffb07a', 18, 1.3);
       if (event.critic) floatText(fx, 'THE CRITIC NODS', x, y + 30, PALETTE.amber, 16, 1.4);
       burst(fx, x, y, 24, [PALETTE.amber, PALETTE.amberLight, '#fff3c9'], 260, 'coin', 600);
+      fx.flyers.push({ x0: LAYOUT.rail.x + event.slot * 220 + 104, y0: 165, x1: x - 40, y1: 250, id: event.id, name: event.name, age: 0, life: 1.1 });
       kitchen.bellRing = 1;
       fx.flash = 0.25;
       break;
@@ -132,6 +133,8 @@ export function stepEffects(fx, kitchen, dt) {
   fx.particles = fx.particles.filter((p) => p.age < p.life);
   for (const label of fx.texts) label.age += dt;
   fx.texts = fx.texts.filter((label) => label.age < label.life);
+  for (const flyer of fx.flyers) flyer.age += dt;
+  fx.flyers = fx.flyers.filter((flyer) => flyer.age < flyer.life);
   if (fx.banner) {
     fx.banner.age += dt;
     if (fx.banner.age > fx.banner.life) fx.banner = null;
@@ -177,7 +180,39 @@ export function drawParticles(ctx, fx) {
   }
 }
 
+/** A paid ticket stamped PAID, arcing from the rail to the window and shrinking away. */
+function drawFlyer(ctx, flyer) {
+  const k = flyer.age / flyer.life;
+  const ease = 1 - (1 - k) ** 3;
+  const x = flyer.x0 + (flyer.x1 - flyer.x0) * ease;
+  const y = flyer.y0 + (flyer.y1 - flyer.y0) * ease - Math.sin(k * Math.PI) * 30;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(-0.25 + k * 0.6);
+  const s = 1 - k * 0.55;
+  ctx.scale(s, s);
+  ctx.globalAlpha = Math.min(1, (1 - k) * 3);
+  ctx.fillStyle = PALETTE.paper;
+  ctx.fillRect(-70, -34, 140, 68);
+  ctx.fillStyle = PALETTE.lantern;
+  ctx.fillRect(-70, -34, 140, 18);
+  ctx.font = `bold 12px ${FONT}`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = PALETTE.cream;
+  ctx.fillText(`#${flyer.id} ${flyer.name.toUpperCase()}`, 0, -25);
+  ctx.rotate(-0.2);
+  ctx.strokeStyle = PALETTE.green;
+  ctx.lineWidth = 3;
+  ctx.strokeRect(-40, -6, 80, 30);
+  ctx.font = `bold 20px ${FONT}`;
+  ctx.fillStyle = PALETTE.green;
+  ctx.fillText('PAID', 0, 10);
+  ctx.restore();
+}
+
 export function drawFloatingTexts(ctx, fx) {
+  for (const flyer of fx.flyers) drawFlyer(ctx, flyer);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   for (const label of fx.texts) {
