@@ -57,7 +57,7 @@ export function handleEvent(fx, event, kitchen) {
       burst(fx, x, y + 10, 8, [PALETTE.amberLight], 100, 'spark', 100);
       break;
     case 'warn':
-      floatText(fx, 'PULL IT!', x, y - 10, PALETTE.red, 18);
+      fx.shake = Math.max(fx.shake, 2);
       break;
     case 'burn':
       floatText(fx, event.place === 'pot' ? 'SOGGY!' : 'BURNT!', x, y - 10, '#ff6a50', 24);

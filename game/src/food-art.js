@@ -285,6 +285,28 @@ export function drawBowl(ctx, x, y, r, items, glow) {
   ctx.stroke();
 }
 
+/** A pair of lacquered chopsticks laid across a served bowl's rim. */
+export function drawChopsticks(ctx, x, y, r) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(-0.18);
+  ctx.lineCap = 'round';
+  for (const offset of [-r * 0.07, r * 0.07]) {
+    ctx.strokeStyle = PALETTE.lanternDark;
+    ctx.lineWidth = Math.max(2, r * 0.07);
+    ctx.beginPath();
+    ctx.moveTo(-r * 1.05, offset);
+    ctx.lineTo(r * 0.6, offset - r * 0.05);
+    ctx.stroke();
+    ctx.strokeStyle = PALETTE.amber;
+    ctx.beginPath();
+    ctx.moveTo(-r * 1.05, offset);
+    ctx.lineTo(-r * 0.75, offset - r * 0.01);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
 /** The food inside a bowl's mouth (an ellipse rx by ry), bottom layer first. */
 function drawBowlContents(ctx, x, y, rx, ry, items) {
   const has = (kind) => items.includes(kind);

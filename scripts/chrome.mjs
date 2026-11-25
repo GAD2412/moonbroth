@@ -59,6 +59,8 @@ export async function openChrome({ headed = false } = {}) {
   await send('Log.enable');
   await send('Page.enable');
   await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 720, deviceScaleFactor: 1, mobile: false });
+  // Keep the page focused even when the test window sits behind another one (the game pauses on blur).
+  await send('Emulation.setFocusEmulationEnabled', { enabled: true });
   const page = {
     send,
     errors,
@@ -80,7 +82,8 @@ export async function openChrome({ headed = false } = {}) {
     },
     async key(key, code = key) {
       const text = key.length === 1 ? key : key === 'Enter' ? '\r' : undefined;
-      await send('Input.dispatchKeyEvent', { type: 'keyDown', key, code, text, windowsVirtualKeyCode: key === 'Enter' ? 13 : key === ' ' ? 32 : key.toUpperCase().charCodeAt(0) });
+      const named = { Enter: 13, Escape: 27, Backspace: 8, ' ': 32 };
+      await send('Input.dispatchKeyEvent', { type: 'keyDown', key, code, text, windowsVirtualKeyCode: named[key] ?? key.toUpperCase().charCodeAt(0) });
       await send('Input.dispatchKeyEvent', { type: 'keyUp', key, code });
       await sleep(60);
     },

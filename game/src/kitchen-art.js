@@ -2,9 +2,9 @@
 // (the boiling pot, the coal grill, the broth kettle, the rice cooker, the board, the bowls,
 // the crates and the serve window looking out on Lantern Pier).
 import { CHOP_STROKES, FONT, LAYOUT, PALETTE } from './config.js';
-import { CRATE_ORDER, INGREDIENTS, recipeMatching } from './menu.js';
+import { bowlFitsRecipe, CRATE_ORDER, INGREDIENTS, recipeMatching } from './menu.js';
 import { cookerSlotRect, cookProgress, crateRect, isOpen } from './kitchen.js';
-import { drawBowl, drawIngredient, roundRect } from './food-art.js';
+import { drawBowl, drawChopsticks, drawIngredient, roundRect } from './food-art.js';
 import { ticketForBowl } from './orders.js';
 
 const KEYS = { pot: 'A', grill: 'S', kettle: 'D', rice: 'G', board: 'F', trash: 'B', window: 'ENTER' };
@@ -31,10 +31,9 @@ export function dropSpotsFor(kitchen) {
   const hand = kitchen.hand;
   if (!hand) return [];
   if (hand.type === 'bowl') {
-    const spots = [LAYOUT.trash];
-    if (recipeMatching(hand.bowl.items)) spots.push(LAYOUT.window);
+    const spots = recipeMatching(hand.bowl.items) ? [LAYOUT.window] : [];
     LAYOUT.bowls.forEach((rect, index) => kitchen.bowls[index] === null && spots.push(rect));
-    return spots;
+    return [...spots, LAYOUT.trash];
   }
   const item = hand.item;
   if (item.stage === 'ruined') return [LAYOUT.trash];
@@ -431,7 +430,10 @@ function drawBowlSpots(ctx, kitchen, t) {
       const scale = (0.6 + 0.4 * easeOutBack(bowl.appear)) * (1 + 0.12 * Math.sin((bowl.pop ?? 0) * Math.PI));
       drawBowl(ctx, cx, cy - 6, 62 * scale, bowl.items, Boolean(ticket));
       if (recipe) bowlTag(ctx, cx, rect.y + 36, ticket ? `#${ticket.id} READY` : recipe.name, Boolean(ticket), t);
-      else if (bowl.items.length) bowlTag(ctx, cx, rect.y + 36, `${bowl.items.length} in`, false, t);
+      else if (bowl.items.length) {
+        const heading = kitchen.orders.tickets.filter((entry) => bowlFitsRecipe(bowl.items, entry.recipe)).sort((a, b) => a.patience - b.patience)[0];
+        bowlTag(ctx, cx, rect.y + 36, heading ? `#${heading.id} · ${bowl.items.length}/${heading.recipe.items.length}` : 'no ticket wants this', false, t);
+      }
     }
     keyCap(ctx, rect.x + 16, rect.y + rect.h - 14, BOWL_KEYS[index]);
   });
@@ -563,6 +565,7 @@ function drawServeWindow(ctx, kitchen, t) {
     const x = rect.x + 80 + index * 110;
     const lift = plate.timer < 0.4 ? (0.4 - plate.timer) * 120 : 0;
     drawBowl(ctx, x, shelfY - 2 - lift, 44, plate.bowl.items, true);
+    drawChopsticks(ctx, x + 6, shelfY - 6 - lift, 44);
     bowlTag(ctx, x, shelfY - 52 - lift, `ORDER UP #${plate.ticket.id}`, true, t);
   });
   ctx.font = `bold 12px ${FONT}`;

@@ -65,7 +65,7 @@ export const CHOP_STROKES = 5;
 
 /** Seconds a cooked item holds before the warning starts, and before it is ruined. */
 export const HOLD_SECONDS = 4.5;
-export const RUIN_SECONDS = 7.5;
+export const RUIN_SECONDS = 8;
 
 /** Seconds a served bowl waits on the window shelf before the runner takes it. */
 export const PICKUP_SECONDS = 1.4;

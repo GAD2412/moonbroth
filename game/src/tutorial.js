@@ -30,7 +30,7 @@ export const TUTORIAL_STEPS = [
     done: (k) => bowlHas(k, 'broth') },
   { text: 'Noodles ready? Lift them from the pot into the bowl.', target: 'pot',
     done: (k) => bowlHas(k, 'noodles') },
-  { text: 'Pick up the bowl and ring it out at the window (ENTER).', target: 'window',
+  { text: 'Pick up the finished bowl (Z), then ring it out at the window (ENTER).', target: 'window',
     done: (k) => k.served > 0 },
 ];
 

@@ -59,7 +59,8 @@ export function stepOrders(kitchen, dt, teaching) {
   orders.tickets = orders.tickets.filter((ticket) => ticket.patience > 0);
   orders.nextIn -= dt * (kitchen.rush ? RUSH_SPAWN_SPEEDUP : 1);
   if (orders.nextIn <= 0 && orders.tickets.length < TICKET.max) {
-    const critic = kitchen.shift.critics && kitchen.elapsed > 15 && kitchen.random() < 0.3;
+    const criticChance = 0.18 + 0.27 * Math.min(1, kitchen.elapsed / kitchen.shift.seconds);
+    const critic = kitchen.shift.critics && kitchen.elapsed > 15 && kitchen.random() < criticChance;
     dealTicket(kitchen, chooseRecipe(kitchen), critic);
     orders.nextIn = orders.tickets.length === 1 ? 2.5 : spawnIntervalAt(kitchen.shift, kitchen.elapsed);
   }

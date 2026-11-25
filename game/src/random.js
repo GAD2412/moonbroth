@@ -12,8 +12,3 @@ export function createRandom(seed) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
-
-/** One element of `list`, picked with the generator `random`. */
-export function pick(random, list) {
-  return list[Math.floor(random() * list.length) % list.length];
-}

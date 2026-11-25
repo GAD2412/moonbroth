@@ -63,6 +63,12 @@ export function rushAt(shift, elapsed) {
   return shift.rush.find(([start, end]) => elapsed >= start && elapsed < end) ?? null;
 }
 
+/** One line saying how hard the shift pushes: how often tickets come and how long they wait. */
+export function pressureLine(shift) {
+  const rush = shift.rush.length ? ` · ${shift.rush.length} rush waves` : '';
+  return `A ticket every ${shift.spawnStart}s, tightening to ${shift.spawnEnd}s · patience ${shift.patience}s+${rush}`;
+}
+
 /** Stars (0 to 3) a score earns on `shift`. */
 export function starsFor(shift, score) {
   return shift.stars.filter((needed) => score >= needed).length;

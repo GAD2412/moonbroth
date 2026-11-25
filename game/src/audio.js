@@ -152,7 +152,9 @@ export function playEvent(audio, event) {
       [0, 4, 7, 12].forEach((step, i) => tone(audio, 523 * 2 ** ((step + Math.min(event.combo, 6)) / 12), now + 0.08 + i * 0.06, 0.18, 'triangle', 0.14));
       break;
     case 'missed':
-      tone(audio, 330, now, 0.25, 'triangle', 0.18, audio.master, 196);
+      tone(audio, 392, now, 0.22, 'triangle', 0.18);
+      tone(audio, 311, now + 0.2, 0.4, 'triangle', 0.18, audio.master, 233);
+      noise(audio, now, 0.25, 300, 0.15, 'lowpass');
       break;
     case 'trash':
       noise(audio, now, 0.2, 400, 0.4, 'lowpass');

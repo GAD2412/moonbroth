@@ -2,7 +2,7 @@
 // the card that opens each shift, the pause card, the closing tally and the night's end.
 import { FONT, FONT_TITLE, PALETTE } from './config.js';
 import { recipesForShift } from './menu.js';
-import { SHIFTS, starsFor } from './shifts.js';
+import { pressureLine, SHIFTS, starsFor } from './shifts.js';
 import { drawBowl, roundRect } from './food-art.js';
 import { drawMoonMark, drawStar } from './hud.js';
 import { keyCap } from './kitchen-art.js';
@@ -144,7 +144,8 @@ export function drawIntro(ctx, shift, t) {
   ctx.fillStyle = 'rgba(226,81,59,0.3)';
   ctx.fill();
   text(ctx, `NEW TONIGHT · ${shift.adds}`, 640, 246, 16, '#ffc6b8', 'center');
-  text(ctx, shift.tip, 640, 284, 15, PALETTE.cream, 'center', 'italic');
+  text(ctx, shift.tip, 640, 280, 15, PALETTE.cream, 'center', 'italic');
+  text(ctx, pressureLine(shift), 640, 302, 12, PALETTE.amberLight, 'center', 'normal');
   const menu = recipesForShift(shift.number);
   const span = Math.min(140, 800 / menu.length);
   menu.forEach((recipe, index) => {

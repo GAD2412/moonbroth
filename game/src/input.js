@@ -7,7 +7,7 @@ import { clickTargets } from './kitchen.js';
 export const KEY_TARGETS = {
   1: 'crate:noodles', 2: 'crate:scallion', 3: 'crate:pork', 4: 'crate:shrimp', 5: 'crate:chili',
   a: 'pot', s: 'grill', d: 'kettle', g: 'rice', f: 'board',
-  z: 'bowl:0', x: 'bowl:1', c: 'bowl:2', b: 'trash', enter: 'window',
+  z: 'bowl:0', x: 'bowl:1', c: 'bowl:2', b: 'trash', backspace: 'trash', enter: 'window',
 };
 
 /** Keys that are commands rather than places. */

@@ -71,6 +71,14 @@ try {
   await page.key('m');
   check('M mutes', await state('app.audio.muted'));
   await page.key('m');
+  await page.evaluate("window.dispatchEvent(new Event('blur'))");
+  check('leaving the window pauses service', (await state('app.screen')) === 'paused');
+  await page.key('p');
+  await page.key('3');
+  check('pork is locked on shift 1', await state('k.hand === null'));
+  await page.key('1');
+  await page.key('Backspace', 'Backspace');
+  check('Backspace bins what you hold', await state('k.hand === null'));
   await page.key('Escape');
   await page.key('Escape');
   check('Esc twice returns to the title', (await state('app.screen')) === 'title');

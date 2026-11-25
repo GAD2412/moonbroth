@@ -10,7 +10,7 @@
 export const INGREDIENTS = {
   noodles: { name: 'Noodles', ready: 'Boiled noodles', prep: 'pot', cook: 5.5, source: 'crate', key: '1' },
   scallion: { name: 'Scallion', ready: 'Sliced scallion', prep: 'chop', cook: 0, source: 'crate', key: '2' },
-  pork: { name: 'Pork belly', ready: 'Charred pork', prep: 'grill', cook: 6, source: 'crate', key: '3' },
+  pork: { name: 'Pork belly', ready: 'Charred pork', prep: 'grill', cook: 6.5, source: 'crate', key: '3' },
   shrimp: { name: 'Tide shrimp', ready: 'Grilled shrimp', prep: 'grill', cook: 4.5, source: 'crate', key: '4' },
   chili: { name: 'Chili oil', ready: 'Chili oil', prep: 'none', cook: 0, source: 'crate', key: '5' },
   broth: { name: 'Moon broth', ready: 'Moon broth', prep: 'none', cook: 0, source: 'kettle', key: 'D' },

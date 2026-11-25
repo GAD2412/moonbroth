@@ -120,6 +120,11 @@ export function handleKey(app, target, command) {
   }
 }
 
+/** Pause service when the window loses focus, so a shift never runs on unattended. */
+export function pauseIfPlaying(app) {
+  if (app.screen === 'play') app.screen = 'paused';
+}
+
 function restartShift(app) {
   startShift(app, app.selected);
   openStall(app);

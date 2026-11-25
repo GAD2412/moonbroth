@@ -2,7 +2,7 @@
 // fixed-step loop. With ?shot=<name> it stages a screenshot scene instead and holds still.
 import { SCREEN, STEP } from './config.js';
 import { createAudio, unlockAudio } from './audio.js';
-import { createApp, describeApp, handleClick, handleKey, renderApp, updateApp } from './game.js';
+import { createApp, describeApp, handleClick, handleKey, pauseIfPlaying, renderApp, updateApp } from './game.js';
 import { fitScreen, setupInput } from './input.js';
 import { stageShot } from './shots.js';
 
@@ -49,6 +49,8 @@ const pointer = setupInput(canvas, () => view, {
 });
 
 window.addEventListener('resize', resizeCanvas);
+window.addEventListener('blur', () => pauseIfPlaying(app));
+document.addEventListener('visibilitychange', () => document.hidden && pauseIfPlaying(app));
 resizeCanvas();
 
 let last = performance.now();

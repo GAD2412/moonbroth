@@ -5,6 +5,7 @@ import { STEP } from './config.js';
 import { bowlFitsRecipe, INGREDIENTS, recipeMatching } from './menu.js';
 import { chopStroke, useTarget } from './kitchen.js';
 import { openStall, startShift, updateApp } from './game.js';
+import { dropSpotsFor } from './kitchen-art.js';
 
 const THINK_SECONDS = 0.32;
 const CHOP_SECONDS = 0.12;
@@ -108,6 +109,13 @@ function playForward(app, limit, until, think = THINK_SECONDS) {
   }
 }
 
+/** Hold the cursor just above where the cook is taking what they hold, as a player's hand would be. */
+function pointerOverDropSpot(kitchen) {
+  const spot = dropSpotsFor(kitchen)[0];
+  if (!spot) return { x: 520, y: 520 };
+  return { x: spot.x + spot.w / 2, y: spot.y + spot.h * 0.42 };
+}
+
 /** True when every ticket has finished sliding onto the rail. */
 function settled(kitchen) {
   return kitchen.orders.tickets.every((ticket) => ticket.age > 0.5);
@@ -127,7 +135,7 @@ export function stageShot(name, app) {
     const k = app.kitchen;
     useTarget(k, 'crate:noodles');
     useTarget(k, 'pot');
-    playForward(app, 1.5, () => false);
+    for (let i = 0; i < 90; i += 1) updateApp(app, STEP);
     useTarget(k, 'crate:scallion');
     useTarget(k, 'board');
     for (let i = 0; i < 5; i += 1) chopStroke(k);
@@ -154,12 +162,12 @@ export function stageShot(name, app) {
     const burning = (k) => k.grill.some((item) => item && item.stage === 'ready' && item.held > 5.2);
     const critic = (k) => k.orders.tickets.some((ticket) => ticket.critic);
     playForward(app, 170, (k) => k.elapsed > 30 && critic(k) && burning(k) && settled(k) && !app.fx.banner, 0.62);
-    app.shotPointer = { x: 700, y: 330 };
+    app.shotPointer = pointerOverDropSpot(app.kitchen);
     return;
   }
   startShift(app, 4);
   openStall(app);
   const busy = (k) => k.grill.some(Boolean) && k.pot.some(Boolean) && k.bowls.some((bowl) => bowl && bowl.items.length >= 2 && !recipeMatching(bowl.items));
   playForward(app, 140, (k) => k.elapsed > 44 && k.rush && k.orders.tickets.length >= 4 && k.shelf.length > 0 && k.shelf[0].timer < 1.2 && busy(k) && settled(k), 0.42);
-  app.shotPointer = { x: 690, y: 500 };
+  app.shotPointer = pointerOverDropSpot(app.kitchen);
 }

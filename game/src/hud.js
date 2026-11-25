@@ -2,7 +2,7 @@
 // the ticket rail, the rush ribbon, the shift card, the key legend, Grandma Tam's tutorial
 // pointer and the food in the cook's hand.
 import { COMBO_MAX, FONT, FONT_TITLE, LAYOUT, PALETTE, TICKET } from './config.js';
-import { recipesForShift } from './menu.js';
+import { recipeMatching, recipesForShift } from './menu.js';
 import { drawBowl, drawIngredient, roundRect } from './food-art.js';
 import { keyCap } from './kitchen-art.js';
 import { currentTutorialStep } from './tutorial.js';
@@ -171,20 +171,34 @@ function drawTickets(ctx, kitchen, t) {
   ctx.fillRect(rail.x, rail.y + 6, rail.w, 6);
   ctx.fillStyle = '#6e5220';
   ctx.fillRect(rail.x, rail.y + 12, rail.w, 2);
+  const readyRecipes = readyBowlRecipes(kitchen);
   for (const ticket of kitchen.orders.tickets) {
     const slide = Math.max(0, 1 - ticket.age / 0.35);
     const x = rail.x + ticket.slot * (TICKET.width + TICKET.gap) + slide * 400;
-    drawTicket(ctx, ticket, x, rail.y + 4, t);
+    const ready = readyRecipes.indexOf(ticket.recipe);
+    if (ready >= 0) readyRecipes.splice(ready, 1);
+    drawTicket(ctx, ticket, x, rail.y + 4, t, ready >= 0);
   }
   if (kitchen.orders.tickets.length === 0) text(ctx, 'The rail is clear: orders are on their way…', rail.x + 20, rail.y + 60, 15, 'rgba(247,234,208,0.6)');
 }
 
-function drawTicket(ctx, ticket, x, y, t) {
+/** The recipes of finished bowls on the counter or in hand, one entry per bowl. */
+function readyBowlRecipes(kitchen) {
+  const carried = kitchen.hand && kitchen.hand.type === 'bowl' ? [kitchen.hand.bowl] : [];
+  return [...kitchen.bowls, ...carried].map((bowl) => bowl && recipeMatching(bowl.items)).filter(Boolean);
+}
+
+function drawTicket(ctx, ticket, x, y, t, ready) {
   const ratio = Math.max(0, ticket.patience / ticket.maxPatience);
   const shake = ratio < 0.2 ? Math.sin(t * 40) * 1.5 : 0;
   ctx.save();
   ctx.translate(x + shake, y);
   ctx.rotate(Math.sin(ticket.id * 1.7) * 0.015);
+  if (ready) {
+    roundRect(ctx, -4, 0, TICKET.width + 8, TICKET.height + 8, 9);
+    ctx.fillStyle = `rgba(108,192,74,${0.55 + Math.sin(t * 6) * 0.25})`;
+    ctx.fill();
+  }
   ctx.fillStyle = 'rgba(0,0,0,0.35)';
   roundRect(ctx, 4, 8, TICKET.width, TICKET.height, 6);
   ctx.fill();
@@ -218,7 +232,7 @@ function drawTicket(ctx, ticket, x, y, t) {
     ctx.fillStyle = barColor;
     ctx.fill();
   }
-  text(ctx, `${Math.ceil(ticket.patience)}s`, TICKET.width - 14, 94, 11, PALETTE.inkSoft, 'right');
+  text(ctx, ready ? 'BOWL READY ✓' : `${Math.ceil(ticket.patience)}s`, TICKET.width - 14, 94, 11, ready ? '#3d8a24' : PALETTE.inkSoft, 'right');
   text(ctx, `${ticket.recipe.value}¢`, 10, 94, 11, PALETTE.inkSoft);
   ctx.restore();
 }
