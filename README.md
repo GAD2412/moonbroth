@@ -31,13 +31,26 @@ There are six bowls to learn: Scallion Moon, Ember Pork, Tidecatcher, Lantern Ri
 
 ### Code
 
-`game/src/` has one job per file: `kitchen.js` (the rules), `orders.js` (the ticket rail), `shifts.js` and `menu.js` (data), `tutorial.js`, `food-art.js` and `kitchen-art.js` (drawing), `hud.js`, `screens.js`, `effects.js`, `audio.js`, `input.js`, `game.js` (screen flow) and `main.js` (boot and loop). `shots.js` stages the screenshot scenes: an autopilot chef plays the real rules forward, and `scripts/capture-shots.mjs` saves each frame straight from Chrome.
+`game/src/` has one job per file:
+
+- Rules: `kitchen.js` (stations, cooking, burning, plating, serving, scoring), `orders.js` (the ticket rail), `tutorial.js` (Grandma Tam's walkthrough)
+- Data: `menu.js` (ingredients and recipes), `shifts.js` (the six shifts and their pressure), `config.js` (layout, palette, timings)
+- Drawing: `food-art.js` (every ingredient and the bowls), `kitchen-art.js` (the stations), `window-art.js` (the serve window and customers), `labels-art.js` (key caps and tags), `hud.js`, `screens.js`, `effects.js` (steam, smoke, sparks, banners)
+- Plumbing: `audio.js` (WebAudio sound and music), `input.js`, `game.js` (screen flow), `main.js` (boot and loop), `random.js`
+
+`shots.js` stages the screenshot scenes: an autopilot chef presses the same targets a player would and plays the real rules forward. `scripts/capture-shots.mjs` saves each frame straight from Chrome, and `scripts/playtest.mjs` plays the first shift in a Chrome window with keys and mouse (tutorial bowl, frame rate, pause, restart, mute, no console errors).
+
+| | |
+|---|---|
+| ![Title](screenshots/02-title.jpg) | ![First shift](screenshots/03-first-shift-tutorial.jpg) |
+| ![Festival Night](screenshots/04-festival-night.jpg) | |
 
 ## Run it
 
 ```sh
 node serve.ts                      # then open http://localhost:8080
 node scripts/capture-shots.mjs     # retake the screenshots in Chrome
+node scripts/playtest.mjs          # play-test shift 1 in a Chrome window
 mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts   # build the entry's dossier
 ```
 

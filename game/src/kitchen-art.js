@@ -1,10 +1,12 @@
 // The stall itself: the back wall, the counters, and every station with what is on it
-// (the boiling pot, the coal grill, the broth kettle, the rice cooker, the board, the bowls,
-// the crates and the serve window looking out on Lantern Pier).
+// (the boiling pot, the coal grill, the broth kettle, the rice cooker, the board, the bowls
+// and the crates). The serve window is drawn by window-art.js.
 import { CHOP_STROKES, FONT, LAYOUT, PALETTE } from './config.js';
 import { bowlFitsRecipe, CRATE_ORDER, INGREDIENTS, recipeMatching } from './menu.js';
 import { cookerSlotRect, cookProgress, crateRect, isOpen } from './kitchen.js';
-import { drawBowl, drawChopsticks, drawIngredient, roundRect } from './food-art.js';
+import { drawBowl, drawIngredient, roundRect } from './food-art.js';
+import { bowlTag, keyCap, stationLabel } from './labels-art.js';
+import { drawServeWindow } from './window-art.js';
 import { ticketForBowl } from './orders.js';
 
 const KEYS = { pot: 'A', grill: 'S', kettle: 'D', rice: 'G', board: 'F', trash: 'B', window: 'ENTER' };
@@ -124,33 +126,6 @@ function drawLanternString(ctx, x0, x1, y, t, rush) {
     ctx.fillRect(-6, 22, 12, 3);
     ctx.restore();
   }
-}
-
-/** A station's name plate with its key, at the top-left of `rect`. */
-function stationLabel(ctx, rect, text, key) {
-  ctx.font = `bold 12px ${FONT}`;
-  const w = ctx.measureText(text).width + (key ? 30 + key.length * 8 : 14);
-  roundRect(ctx, rect.x + 6, rect.y + 6, w, 20, 6);
-  ctx.fillStyle = 'rgba(21,18,42,0.82)';
-  ctx.fill();
-  ctx.fillStyle = PALETTE.cream;
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(text, rect.x + 13, rect.y + 16.5);
-  if (key) keyCap(ctx, rect.x + w - 6 - Math.max(16, key.length * 7 + 8) / 2, rect.y + 16, key);
-}
-
-/** A small keyboard key drawn with its letter. */
-export function keyCap(ctx, x, y, key) {
-  ctx.font = `bold 11px ${FONT}`;
-  const w = Math.max(16, ctx.measureText(key).width + 8);
-  roundRect(ctx, x - w / 2, y - 8, w, 16, 4);
-  ctx.fillStyle = PALETTE.amber;
-  ctx.fill();
-  ctx.fillStyle = PALETTE.ink;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(key, x, y + 0.5);
 }
 
 /** A ring around a cooking slot: green while cooking, gold when done, flashing red before it is ruined. */
@@ -439,23 +414,6 @@ function drawBowlSpots(ctx, kitchen, t) {
   });
 }
 
-function bowlTag(ctx, x, y, text, ready, t) {
-  ctx.font = `bold 13px ${FONT}`;
-  const w = ctx.measureText(text).width + 18;
-  const pop = ready ? 1 + Math.sin(t * 6) * 0.04 : 1;
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.scale(pop, pop);
-  roundRect(ctx, -w / 2, -11, w, 22, 11);
-  ctx.fillStyle = ready ? PALETTE.green : 'rgba(21,18,42,0.8)';
-  ctx.fill();
-  ctx.fillStyle = ready ? PALETTE.ink : PALETTE.cream;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(text, 0, 1);
-  ctx.restore();
-}
-
 function easeOutBack(v) {
   const c = 1.7;
   return 1 + (c + 1) * (v - 1) ** 3 + c * (v - 1) ** 2;
@@ -511,149 +469,6 @@ function drawCrates(ctx, kitchen) {
     keyCap(ctx, rect.x + 16, rect.y + 89, info.key);
     if (!isOpen(kitchen, kind)) lockedOverlay(ctx, rect, kind === 'pork' ? 'Shift 2' : 'Shift 3');
   });
-}
-
-/** The hatch onto Lantern Pier: customers wait outside, finished bowls sit on the shelf. */
-function drawServeWindow(ctx, kitchen, t) {
-  const rect = LAYOUT.window;
-  const sky = ctx.createLinearGradient(0, rect.y, 0, rect.y + rect.h);
-  sky.addColorStop(0, '#1d1b47');
-  sky.addColorStop(1, '#3f2d5e');
-  ctx.fillStyle = sky;
-  ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
-  ctx.fillStyle = '#fff3c9';
-  ctx.beginPath();
-  ctx.arc(rect.x + rect.w - 60, rect.y + 68, 22, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = '#1d1b47';
-  ctx.beginPath();
-  ctx.arc(rect.x + rect.w - 50, rect.y + 62, 19, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = '#16122c';
-  ctx.fillRect(rect.x, rect.y + 150, rect.w, 40);
-  for (let i = 0; i < 6; i += 1) {
-    const lx = rect.x + 20 + i * 62;
-    ctx.fillStyle = `rgba(255,${170 + (i % 2) * 40},90,${0.6 + Math.sin(t * 2 + i) * 0.2})`;
-    ctx.beginPath();
-    ctx.arc(lx, rect.y + 46 + Math.sin(i) * 6, 5, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  kitchen.orders.tickets.forEach((ticket, i) => drawCustomer(ctx, ticket, rect.x + 50 + i * 78, rect.y + 168, t));
-  ctx.fillStyle = PALETTE.lanternDark;
-  ctx.fillRect(rect.x - 6, rect.y - 4, rect.w + 12, 14);
-  for (let i = 0; i < 10; i += 1) {
-    ctx.fillStyle = i % 2 ? PALETTE.cream : PALETTE.lantern;
-    ctx.beginPath();
-    const sx = rect.x - 6 + i * ((rect.w + 12) / 10);
-    const sw = (rect.w + 12) / 10;
-    ctx.moveTo(sx, rect.y + 10);
-    ctx.lineTo(sx + sw, rect.y + 10);
-    ctx.lineTo(sx + sw, rect.y + 26);
-    ctx.quadraticCurveTo(sx + sw / 2, rect.y + 36, sx, rect.y + 26);
-    ctx.fill();
-  }
-  ctx.strokeStyle = PALETTE.lanternDark;
-  ctx.lineWidth = 10;
-  ctx.strokeRect(rect.x - 1, rect.y + 4, rect.w + 2, rect.h - 4);
-  const shelfY = rect.y + rect.h - 52;
-  ctx.fillStyle = '#c99a4a';
-  ctx.fillRect(rect.x - 6, shelfY + 26, rect.w + 12, 14);
-  ctx.fillStyle = '#8c6526';
-  ctx.fillRect(rect.x - 6, shelfY + 40, rect.w + 12, 6);
-  drawBell(ctx, rect.x + rect.w - 40, shelfY + 14, kitchen.bellRing ?? 0);
-  kitchen.shelf.forEach((plate, index) => {
-    const x = rect.x + 80 + index * 110;
-    const lift = plate.timer < 0.4 ? (0.4 - plate.timer) * 120 : 0;
-    drawBowl(ctx, x, shelfY - 2 - lift, 44, plate.bowl.items, true);
-    drawChopsticks(ctx, x + 6, shelfY - 6 - lift, 44);
-    bowlTag(ctx, x, shelfY - 52 - lift, `ORDER UP #${plate.ticket.id}`, true, t);
-  });
-  ctx.font = `bold 12px ${FONT}`;
-  roundRect(ctx, rect.x + 10, rect.y + 36, 150, 20, 6);
-  ctx.fillStyle = 'rgba(21,18,42,0.82)';
-  ctx.fill();
-  ctx.fillStyle = PALETTE.cream;
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('SERVE WINDOW', rect.x + 18, rect.y + 46.5);
-  keyCap(ctx, rect.x + 136, rect.y + 46, 'ENTER');
-}
-
-const COATS = ['#3d6fb0', '#8a4f9e', '#2f8f88', '#b5643a', '#5a6b3d', '#a83a5a'];
-const SKIN = ['#f0c29a', '#d79c6e', '#a8704a', '#f6d3b5', '#7a4b2f'];
-
-/**
- * One customer waiting outside the window for `ticket`: their face sours as the ticket's
- * patience runs down, and critics wear a gold hat.
- */
-function drawCustomer(ctx, ticket, x, baseY, t) {
-  const mood = ticket.patience / ticket.maxPatience;
-  const fidget = mood < 0.25 ? Math.sin(t * 18 + ticket.id) * 2 : Math.sin(t * 2 + ticket.id) * 1;
-  const y = baseY + fidget;
-  ctx.fillStyle = COATS[ticket.id % COATS.length];
-  roundRect(ctx, x - 24, y - 40, 48, 54, 18);
-  ctx.fill();
-  ctx.fillStyle = SKIN[(ticket.id * 3) % SKIN.length];
-  ctx.beginPath();
-  ctx.arc(x, y - 58, 17, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = PALETTE.ink;
-  ctx.fillRect(x - 8, y - 62, 4, 4);
-  ctx.fillRect(x + 4, y - 62, 4, 4);
-  ctx.strokeStyle = PALETTE.ink;
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  if (mood > 0.5) ctx.arc(x, y - 54, 6, 0.2, Math.PI - 0.2);
-  else if (mood > 0.25) {
-    ctx.moveTo(x - 5, y - 50);
-    ctx.lineTo(x + 5, y - 50);
-  } else ctx.arc(x, y - 44, 6, Math.PI + 0.3, -0.3);
-  ctx.stroke();
-  if (mood <= 0.25) {
-    ctx.fillStyle = '#9fd4ff';
-    ctx.beginPath();
-    ctx.ellipse(x + 15, y - 66, 3, 5, 0, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  if (ticket.critic) {
-    ctx.fillStyle = PALETTE.amber;
-    ctx.fillRect(x - 18, y - 76, 36, 5);
-    ctx.fillRect(x - 11, y - 90, 22, 15);
-    ctx.fillStyle = PALETTE.lanternDark;
-    ctx.fillRect(x - 11, y - 79, 22, 3);
-  } else {
-    ctx.fillStyle = ['#2a2033', '#5b3a22', '#1d1b47'][ticket.id % 3];
-    ctx.beginPath();
-    ctx.arc(x, y - 64, 17, Math.PI, 0);
-    ctx.fill();
-  }
-  roundRect(ctx, x - 16, y - 104 + (ticket.critic ? -6 : 0), 32, 16, 6);
-  ctx.fillStyle = 'rgba(247,234,208,0.9)';
-  ctx.fill();
-  ctx.font = `bold 10px ${FONT}`;
-  ctx.fillStyle = PALETTE.ink;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(`#${ticket.id}`, x, y - 96 + (ticket.critic ? -6 : 0));
-}
-
-function drawBell(ctx, x, y, ring) {
-  const wobble = Math.sin(ring * 40) * ring * 0.3;
-  ctx.save();
-  ctx.translate(x, y + 12);
-  ctx.rotate(wobble);
-  ctx.fillStyle = PALETTE.amber;
-  ctx.beginPath();
-  ctx.moveTo(-16, 0);
-  ctx.quadraticCurveTo(-16, -22, 0, -22);
-  ctx.quadraticCurveTo(16, -22, 16, 0);
-  ctx.closePath();
-  ctx.fill();
-  ctx.fillStyle = PALETTE.amberLight;
-  ctx.fillRect(-3, -28, 6, 6);
-  ctx.restore();
-  ctx.fillStyle = PALETTE.woodDark;
-  ctx.fillRect(x - 20, y + 12, 40, 5);
 }
 
 function stationPlate(ctx, rect) {

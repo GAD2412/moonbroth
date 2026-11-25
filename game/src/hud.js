@@ -4,7 +4,7 @@
 import { COMBO_MAX, FONT, FONT_TITLE, LAYOUT, PALETTE, TICKET } from './config.js';
 import { recipeMatching, recipesForShift } from './menu.js';
 import { drawBowl, drawIngredient, roundRect } from './food-art.js';
-import { keyCap } from './kitchen-art.js';
+import { keyCap } from './labels-art.js';
 import { currentTutorialStep } from './tutorial.js';
 import { clickTargets } from './kitchen.js';
 

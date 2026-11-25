@@ -5,7 +5,7 @@ import { recipesForShift } from './menu.js';
 import { pressureLine, SHIFTS, starsFor } from './shifts.js';
 import { drawBowl, roundRect } from './food-art.js';
 import { drawMoonMark, drawStar } from './hud.js';
-import { keyCap } from './kitchen-art.js';
+import { keyCap } from './labels-art.js';
 
 function text(ctx, value, x, y, size, color, align = 'left', weight = 'bold', family = FONT) {
   ctx.font = `${weight} ${size}px ${family}`;
